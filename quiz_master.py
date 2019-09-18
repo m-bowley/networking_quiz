@@ -17,7 +17,7 @@ while True:
         print(address)
         players.append(Player(player_ID, address))
         player_ID += 1
-        reply = nwz.send_message_to(address, "Welcome to the quiz")
+        reply = nwz.send_reply_to(quiz_server, "Welcome to the quiz")
         if len(players) == 4:
             break
         time_taken -= time()

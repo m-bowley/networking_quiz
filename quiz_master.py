@@ -15,7 +15,8 @@ while True:
     if message is not None:
         address = message
         print(address)
-        players.append(Player(player_ID, address))
+        conn = nwz.discover(address)
+        players.append(Player(player_ID, address, conn))
         player_ID += 1
         reply = nwz.send_message_to(address, "Welcome to the quiz")
         if len(players) == 4:

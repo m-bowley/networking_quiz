@@ -18,15 +18,13 @@ while True:
         conn = nwz.discover(address)
         players.append(Player(player_ID, address, conn))
         player_ID += 1
-        reply = nwz.send_message_to(address, "Welcome to the quiz")
-        if len(players) == 4:
-            break
-        time_taken -= time()
-        wait_time += time_taken
+        nwz.send_reply_to(quiz_server, "Player acknowledged")
+        reply = nwz.send_message_to(conn, "Welcome to the quiz")
+        message = None
     else:
+        sleep(1)
+        wait_time += 1
+        print(wait_time)
         if len(players) > 0:
-            sleep(1)
-            time_taken += 1
-            nwz.send_reply_to(quiz_server, "Quiz starts in " + str(int(30 - wait_time)))
-            if wait_time >= 30:
-                nwz.send_reply_to(quiz_server, "Quiz starting...")
+            reply = nwz.send_message_to(players[0].connection, "Wait time" + str(wait_time))
+

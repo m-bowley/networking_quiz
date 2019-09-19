@@ -23,13 +23,13 @@ while len(players) < MAX_PLAYERS:
         conn = nwz.discover(address)
         players.append(Player(player_ID, address, conn))
         player_ID += 1
-        nwz.send_news_to(quiz_server, "Information", "Player acknowledged: " + address)
+        nwz.send_reply_to(quiz_server, "Player acknowledged")
         reply = nwz.send_message_to(conn, "Welcome to the quiz")
         message = None
     else:
         sleep(1)
         if len(players) > 0:
-            reply = nwz.send_news_to(quiz_server, "Information", "Waiting for... " + str(len(players) - MAX_PLAYERS))
+            reply = nwz.send_message_to(players[0].connection, "Waiting for... " + str(len(players) - MAX_PLAYERS))
 
 questions = []
 with open("questions.csv", 'r') as file:

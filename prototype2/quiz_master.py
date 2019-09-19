@@ -5,7 +5,7 @@ from time import time, sleep
 import random
 
 players = []
-MAX_PLAYERS = 2
+MAX_PLAYERS = 1
 
 # Open the quiz server and bind it to a port - creating a socket
 quiz_server = nwz.advertise('Quiz')
@@ -14,7 +14,7 @@ player_ID = 0
 # Search for messages from participants until roster is full
 while len(players) < MAX_PLAYERS:
     # Poll the server checking for rquests from participants
-    message = nwz.wait_for_message_from(quiz_server, wait_for_s=0, autoreply=True)
+    message = nwz.wait_for_message_from(quiz_server, wait_for_s=0)
     # If a message has been recieved
     if message is not None:
         # Capture the address for the connection to the quiz client
@@ -32,7 +32,7 @@ while len(players) < MAX_PLAYERS:
             reply = nwz.send_message_to(players[0].connection, "Waiting for... " + str(len(players) - MAX_PLAYERS))
 
 questions = []
-with open("questions.csv", 'r') as file:
+with open("../questions.csv", 'r') as file:
     for line in file.readlines():
         line = line.split(',')
         if len(line) > 4:

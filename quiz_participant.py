@@ -3,10 +3,12 @@ from time import sleep
 
 quiz_server = nwz.discover("Quiz")
 address = nwz.address()
-connection = nwz.advertise(address)
-reply = nwz.send_message_to(quiz_server, address)
-playerID = reply
-response = None
+connection = nwz.advertise("Quiz Participant :s"+address)
+response = nwz.wait_for_message_from(connection, autoreply=True)
+playerID = response
+response = nwz.wait_for_message_from(connection)
+
+response = ""
 while response != "Done":
     news = nwz.wait_for_news_from(quiz_server)
     if news[0] == "Information":
@@ -20,7 +22,8 @@ while response != "Done":
             print(str(i) + ". " + answers[i])
         print('Enter the number of your answer')
         my_answer = int(input(">"))
-        nwz.send_news_to(quiz_server, playerID, my_answer)
+        reply = nwz.send_message_to(connection, [playerID, my_answer])
+        print(reply)
     elif news[0] == playerID:
         print(news[1])
     

@@ -5,6 +5,7 @@ from time import time, sleep
 import random
 
 players = []
+player_addresses = []
 MAX_PLAYERS = 2
 
 # Open the quiz server and bind it to a port - creating a socket
@@ -13,24 +14,30 @@ player_ID = 0
 
 # Search for messages from participants until roster is full
 while len(players) < MAX_PLAYERS:
-    # Poll the server checking for rquests from participants
-    message = nwz.wait_for_message_from(quiz_server, wait_for_s=0)
+    # Poll the server checking for requests from participants
+    connections = nwz.discover_all()
+    #print(connections)
     # If a message has been recieved
-    if message is not None:
-        # Capture the address for the connection to the quiz client
-        address = message
-        print(address)
-        conn = nwz.discover(address)
-        players.append(Player(player_ID, address, conn))
-        nwz.send_reply_to(quiz_server, player_ID)
-        nwz.send_news_to(quiz_server, "Information", "Player acknowledged: " + address)
-        player_ID += 1
-        message = None
+    if len(connections) > 0:
+        for c in connections:
+            # Capture the address for the connection to the quiz client
+            if "Quiz Participant" in c[0] and c[1] not in player_addresses:
+                print(connections)
+                nwz.send_news_to(quiz_server, "Information", "Player acknowledged" + c[1])
+                #print(address)
+                conn = nwz.discover(c[0])
+                response = nwz.send_message_to(conn, player_ID)
+                print(response)
+                nwz.send_reply_to(conn)
+                players.append(Player(player_ID, c[1], conn))
+                player_addresses.append(c[1])
+                player_ID += 1
     else:
         sleep(1)
         if len(players) > 0:
-            reply = nwz.send_news_to(quiz_server, "Information", "Waiting for... " + str(len(players) - MAX_PLAYERS))
-
+            print("sending news")
+            nwz.send_news_to(quiz_server, "Information", "Waiting for... " + str(MAX_PLAYERS -len(players)) + " players")
+sleep (5)
 questions = []
 
 with open("questions.csv", 'r') as file:
@@ -44,20 +51,25 @@ nwz.send_news_to(quiz_server, "Information", "Quiz Starting")
 
 while len(questions) > 0:
     current_q = random.choice(questions)
+    sleep(1)
     nwz.send_news_to(quiz_server, "Question", current_q.question)
     sleep(2)
-    nwz.send_news_to(quiz_server, "Answer", current_q.answers)
+    nwz.send_news_to(quiz_server, "Answers", current_q.answers)
     answered = 0
     while answered < len(players):
-        news = nwz.wait_for_news_from(quiz_server)
-        if news[0] <= player_ID:
-            answer = news[1]
-            player = players[news[0]
-            if int(answer) == int(current_q.answer):
-                player.score += 1
-                nwz.send_news_to(quiz_server, news[0], "Correct! Your score is: " + str(player.score]))
-            else:
-                nwz.send_news_to(quiz_server, news[0], "Correct! Your score is: " + str(player.score]))
-    
-
-
+        for p in players:
+            message = nwz.wait_for_message_from(p.connection, wait_for_s=0)
+            if message is not None:
+                print(message)
+                answer = message[1]
+                player = players[message[0]]
+                if int(answer) == int(current_q.correct):
+                    player.score += 1
+                    nwz.send_reply_to(player.connection, "Correct! Your score is: " + str(player.score))
+                else:
+                    nwz.send_reply_to(player.connection, "Incorrect! Your score is: " + str(player.score))
+                answered += 1
+                message = None
+        else:
+            sleep(1)
+    questions.remove(current_q)

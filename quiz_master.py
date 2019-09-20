@@ -24,10 +24,8 @@ while len(players) < MAX_PLAYERS:
             if "Quiz Participant" in c[0] and c[1] not in player_addresses:
                 print(connections)
                 nwz.send_news_to(quiz_server, "Information", "Player acknowledged" + c[1])
-                #print(address)
                 conn = nwz.discover(c[0])
                 response = nwz.send_message_to(conn, player_ID)
-                print(response)
                 nwz.send_reply_to(conn)
                 players.append(Player(player_ID, c[1], conn))
                 player_addresses.append(c[1])
@@ -35,7 +33,6 @@ while len(players) < MAX_PLAYERS:
     else:
         sleep(1)
         if len(players) > 0:
-            print("sending news")
             nwz.send_news_to(quiz_server, "Information", "Waiting for... " + str(MAX_PLAYERS -len(players)) + " players")
 sleep (5)
 questions = []
@@ -60,7 +57,6 @@ while len(questions) > 0:
         for p in players:
             message = nwz.wait_for_message_from(p.connection, wait_for_s=0)
             if message is not None:
-                print(message)
                 answer = message[1]
                 player = players[message[0]]
                 if int(answer) == int(current_q.correct):
@@ -73,3 +69,5 @@ while len(questions) > 0:
         else:
             sleep(1)
     questions.remove(current_q)
+
+nwz.send_news_to(quiz_server, "Information", "Quiz Finished")
